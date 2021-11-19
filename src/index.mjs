@@ -12,7 +12,7 @@ const makeFileName = (url) =>
   url.replaceAll(/https:\/\//g, "").replaceAll(/\//g, "-");
 
 // Take a page snapshot for a given url and size
-const takeSnapshot = async ({ browser, url, viewport }) => {
+const takeSnapshot = async ({ browser, url, viewport, isGolden }) => {
   const page = await browser.newPage();
 
   await page.setViewportSize({
@@ -20,17 +20,22 @@ const takeSnapshot = async ({ browser, url, viewport }) => {
     height: viewport.height,
   });
   await page.goto(url);
-  const filename = `${makeFileName(url)}-${viewport.width}.png`;
 
-  await page.screenshot({
-    path: `./screenshots/${filename}`,
-    fullPage: true,
-  });
-  log.info(`Created snapshot ${chalk.cyan(filename)}`);
+  const filename = `${makeFileName(url)}-${viewport.width}.png`;
+  const path = `./screenshots${isGolden ? "-golden" : ""}/${filename}`;
+
+  await page.screenshot({ path, fullPage: true });
+  log.info(
+    `Created ${isGolden ? "golden " : ""}snapshot ${chalk.cyan(filename)}`
+  );
 };
 
 (async () => {
-  log.info("Generating snapshots...");
+  // handle args
+  const args = process.argv.slice(2);
+  const isGolden = args?.[0] === "--golden";
+
+  log.info(`Generating ${isGolden ? "golden " : ""}snapshots...`);
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
@@ -39,7 +44,7 @@ const takeSnapshot = async ({ browser, url, viewport }) => {
   for (const url of urlList) {
     // Take viewport snapshots in parallel
     const snapshotPromises = VIEWPORTS.map((viewport) =>
-      takeSnapshot({ browser, url, viewport })
+      takeSnapshot({ browser, url, viewport, isGolden })
     );
 
     await Promise.all(snapshotPromises);
