@@ -28,4 +28,4 @@ The following command will make snapshots of all pages in supplied list, for eve
 npm run start
 ```
 
-For any file that has a difference of one or more pixels, the page is logged and a PNG file is produced which visually highlights the difference as red pixels on a pale, grayscale background.
+For any file that has a difference of one or more pixels, the page is logged and a PNG file is produced in the `diffs` folder, which visually highlights the difference as red pixels on a pale, grayscale background.
