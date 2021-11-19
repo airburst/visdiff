@@ -22,8 +22,10 @@ npm run baseline
 
 ## Comparing pages
 
-The following command will create current images in a sub-folder named `screenshots` and visually compare them to golden counterparts:
+The following command will make snapshots of all pages in supplied list, for every viewport width, writing images to a sub-folder named `screenshots` and visually comparing them to golden counterparts:
 
 ```javascript
 npm run start
 ```
+
+For any file that has a difference of one or more pixels, the page is logged and a PNG file is produced which visually highlights the difference as red pixels on a pale, grayscale background.
