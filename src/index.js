@@ -1,9 +1,8 @@
 import { chromium } from "playwright";
 import chalk from "chalk";
-import log from "./logger.mjs";
-import { compareImages } from "./utils/compareImages.mjs";
-import { makeFileName } from "./utils/makeFileName.mjs";
-import { FOLDERS, VIEWPORTS } from "./constants.mjs";
+import log from "./logger.js";
+import { compareImages, makeFileName, scrollFullPage } from "./utils/index.js";
+import { FOLDERS, VIEWPORTS } from "./constants.js";
 
 const urlList = ["https://www.simplybusiness.co.uk"];
 
@@ -15,20 +14,29 @@ const takeSnapshot = async ({ browser, url, viewport, isGolden }) => {
     width: viewport.width,
     height: viewport.height,
   });
-  await page.goto(url);
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await scrollFullPage(page);
 
   const filename = `${makeFileName(url)}-${viewport.width}.png`;
   const path = isGolden
     ? `./${FOLDERS.GOLDEN}/${filename}`
     : `./${FOLDERS.SCREENSHOTS}/${filename}`;
 
-  await page.screenshot({ path, fullPage: true });
-  log.info(
-    `Created ${isGolden ? "golden " : ""}snapshot ${chalk.cyan(filename)}`
-  );
-  if (!isGolden) {
-    const numberOfDiffs = await compareImages(filename);
-    log.info(`${chalk.cyan(filename)} [${numberOfDiffs} diffs]`);
+  try {
+    await page.screenshot({ path, fullPage: true });
+
+    let message = `Created ${isGolden ? "golden " : ""}snapshot ${chalk.cyan(
+      filename
+    )}`;
+
+    if (!isGolden) {
+      const numberOfDiffs = await compareImages(filename);
+      const colour = numberOfDiffs > 0 ? chalk.yellow : chalk.green;
+      message += colour(` - ${numberOfDiffs} diffs`);
+    }
+    log.info(message);
+  } catch (error) {
+    log.error(chalk.red(`${filename}: ${error.message}`));
   }
 };
 
@@ -40,7 +48,6 @@ const takeSnapshot = async ({ browser, url, viewport, isGolden }) => {
   log.info(`Generating ${isGolden ? "golden " : ""}snapshots...`);
 
   const browser = await chromium.launch();
-  const page = await browser.newPage();
 
   // Walk through list of urls
   for (const url of urlList) {
@@ -56,5 +63,3 @@ const takeSnapshot = async ({ browser, url, viewport, isGolden }) => {
   await browser.close();
   log.info("Snapshots complete");
 })();
-
-// TODO: add progress bar to CLI

@@ -1,7 +1,7 @@
 import fs from "fs";
 import { PNG } from "pngjs";
 import pixelmatch from "pixelmatch";
-import { FOLDERS } from "../constants.mjs";
+import { FOLDERS } from "../constants.js";
 
 export const compareImages = (filename) => {
   if (!filename) {
