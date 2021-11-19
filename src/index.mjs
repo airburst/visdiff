@@ -1,15 +1,11 @@
 import { chromium } from "playwright";
 import chalk from "chalk";
 import log from "./logger.mjs";
+import { compareImages } from "./utils/compareImages.mjs";
+import { makeFileName } from "./utils/makeFileName.mjs";
+import { FOLDERS, VIEWPORTS } from "./constants.mjs";
 
 const urlList = ["https://www.simplybusiness.co.uk"];
-const VIEWPORTS = [
-  { width: 1366, height: 768 },
-  { width: 414, height: 896 },
-];
-
-const makeFileName = (url) =>
-  url.replaceAll(/https:\/\//g, "").replaceAll(/\//g, "-");
 
 // Take a page snapshot for a given url and size
 const takeSnapshot = async ({ browser, url, viewport, isGolden }) => {
@@ -22,12 +18,18 @@ const takeSnapshot = async ({ browser, url, viewport, isGolden }) => {
   await page.goto(url);
 
   const filename = `${makeFileName(url)}-${viewport.width}.png`;
-  const path = `./screenshots${isGolden ? "-golden" : ""}/${filename}`;
+  const path = isGolden
+    ? `./${FOLDERS.GOLDEN}/${filename}`
+    : `./${FOLDERS.SCREENSHOTS}/${filename}`;
 
   await page.screenshot({ path, fullPage: true });
   log.info(
     `Created ${isGolden ? "golden " : ""}snapshot ${chalk.cyan(filename)}`
   );
+  if (!isGolden) {
+    const numberOfDiffs = await compareImages(filename);
+    log.info(`${chalk.cyan(filename)} [${numberOfDiffs} diffs]`);
+  }
 };
 
 (async () => {
