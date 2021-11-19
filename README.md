@@ -1,6 +1,6 @@
 # visdiff
 
-This tool allows you to generate screenshots in various screen widths for a list of page urls. Having created a baseline set of 'golden' images, subsequent runs will capture current images and compare at pixle level for any differences. Any deltas are flagged as errors.
+This tool allows you to generate screenshots in various screen widths for a list of page urls. Having created a baseline set of 'golden' images, subsequent runs will capture current images and compare at pixel level for any differences.
 
 This is currently a command line tool, but can be converted fairly easily to run unit tests as part of a CI/CD chain.
 
