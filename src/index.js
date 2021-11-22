@@ -7,11 +7,12 @@ import {
   scrollFullPage,
   emptyFolders,
   Timer,
+  chunk,
 } from "./utils/index.js";
-import { FOLDERS, VIEWPORTS } from "./constants.js";
-// import urlList from "./urlList.js";
+import { FOLDERS, VIEWPORTS, BATCH_SIZE } from "./constants.js";
+import urlList from "./urlList.js";
 
-const urlList = ["https://www.simplybusiness.co.uk"];
+// const urlList = ["https://www.simplybusiness.co.uk"];
 
 // Take a page snapshot for a given url and size
 const takeSnapshot = async ({ browser, url, viewport, isGolden, timer }) => {
@@ -39,9 +40,9 @@ const takeSnapshot = async ({ browser, url, viewport, isGolden, timer }) => {
     if (!isGolden) {
       const numberOfDiffs = await compareImages(filename);
       const colour = numberOfDiffs > 0 ? chalk.yellow : chalk.green;
-      message += colour(` - ${numberOfDiffs} diffs`);
+      message += colour(` (${numberOfDiffs} diffs)`);
     }
-    message += chalk.white(`   ${timer.getElapsed()}s`);
+    message += chalk.white(` ${timer.getElapsed()}s`);
     log.info(message);
   } catch (error) {
     log.error(chalk.red(`${filename}: ${error.message}`));
@@ -59,14 +60,17 @@ const takeSnapshot = async ({ browser, url, viewport, isGolden, timer }) => {
 
   const browser = await chromium.launch();
 
-  // Walk through list of urls
-  for (const url of urlList) {
-    // Take viewport snapshots in parallel
-    const snapshotPromises = VIEWPORTS.map((viewport) =>
-      takeSnapshot({ browser, url, viewport, isGolden, timer })
+  // Walk through batches of urls
+  const batches = chunk(urlList, BATCH_SIZE);
+
+  for (const batch of batches) {
+    const batchPromises = batch.flatMap((url) =>
+      VIEWPORTS.map((viewport) =>
+        takeSnapshot({ browser, url, viewport, isGolden, timer })
+      )
     );
 
-    await Promise.all(snapshotPromises);
+    await Promise.all(batchPromises);
   }
 
   // Clean up
