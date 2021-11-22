@@ -7,19 +7,28 @@ export const compareImages = (filename) => {
   if (!filename) {
     return false;
   }
+  let goldenImage, currentImage;
 
-  // TODO: throw if no golden image
-  const img1 = PNG.sync.read(
-    fs.readFileSync(`./${FOLDERS.GOLDEN}/${filename}`)
-  );
-  const img2 = PNG.sync.read(
-    fs.readFileSync(`./${FOLDERS.SCREENSHOTS}/${filename}`)
-  );
-  const { width, height } = img1;
+  try {
+    goldenImage = PNG.sync.read(
+      fs.readFileSync(`./${FOLDERS.GOLDEN}/${filename}`)
+    );
+  } catch (goldenError) {
+    throw Error(`Cannot read golden snapshot`);
+  }
+  try {
+    currentImage = PNG.sync.read(
+      fs.readFileSync(`./${FOLDERS.SCREENSHOTS}/${filename}`)
+    );
+  } catch (currentError) {
+    throw Error(`Cannot read curren snapshot`);
+  }
+
+  const { width, height } = goldenImage;
   const diff = new PNG({ width, height });
   const numberOfDiffs = pixelmatch(
-    img1.data,
-    img2.data,
+    goldenImage.data,
+    currentImage.data,
     diff.data,
     width,
     height,
