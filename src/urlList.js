@@ -26,7 +26,6 @@ export default [
   "https://www.simplybusiness.co.uk/finance/unpaid-invoices/",
   "https://www.simplybusiness.co.uk/insurance-claims/",
   "https://www.simplybusiness.co.uk/insurance-claims/submit-your-claims-online/",
-
   "https://www.simplybusiness.co.uk/support/complaints/",
   "https://www.simplybusiness.co.uk/support/customer-feedback/",
   "https://www.simplybusiness.co.uk/support/customer-feedback/customer-rewards-survey-landlord/",

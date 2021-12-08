@@ -7,4 +7,4 @@ export const VIEWPORTS = [
   { width: 1366, height: 768 },
   { width: 414, height: 896 },
 ];
-export const BATCH_SIZE = 5; // Parallel page screenshots (x viewports) = 10
+export const BATCH_SIZE = 4; // Parallel page screenshots (x viewports) = 10
