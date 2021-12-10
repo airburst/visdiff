@@ -10,44 +10,56 @@ import {
   chunk,
 } from "./utils/index.js";
 import { FOLDERS, VIEWPORTS, BATCH_SIZE } from "./constants.js";
-import urlList from "./urlList.js";
+// import urlList from "./urlList.js";
 
-// const urlList = ["https://www.simplybusiness.co.uk"];
+const urlList = [
+  "https://preview-stagingwwwsimplybusinessc19589.gtsb.io/cs/welcome/yoga-insurance/",
+];
 
 // Take a page snapshot for a given url and size
-const takeSnapshot = async ({ browser, url, viewport, isGolden, timer }) => {
-  const page = await browser.newPage();
+const takeSnapshot = ({ browser, url, viewport, isGolden, timer }) =>
+  new Promise(async (resolve) => {
+    const page = await browser.newPage();
 
-  await page.setViewportSize({
-    width: viewport.width,
-    height: viewport.height,
-  });
-  await page.goto(url, { waitUntil: "domcontentloaded" });
-  await scrollFullPage(page);
+    await page.setViewportSize({
+      width: viewport.width,
+      height: viewport.height,
+    });
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded" });
 
-  const filename = `${makeFileName(url)}-${viewport.width}.png`;
-  const path = isGolden
-    ? `./${FOLDERS.GOLDEN}/${filename}`
-    : `./${FOLDERS.SCREENSHOTS}/${filename}`;
+      // Test whether this page is password-protected
 
-  try {
-    await page.screenshot({ path, fullPage: true });
+      await scrollFullPage(page);
 
-    let message = `Created ${isGolden ? "golden " : ""}snapshot ${chalk.cyan(
-      filename
-    )}`;
+      const filename = `${makeFileName(url)}-${viewport.width}.png`;
+      const path = isGolden
+        ? `./${FOLDERS.GOLDEN}/${filename}`
+        : `./${FOLDERS.SCREENSHOTS}/${filename}`;
 
-    if (!isGolden) {
-      const numberOfDiffs = await compareImages(filename);
-      const colour = numberOfDiffs > 0 ? chalk.yellow : chalk.green;
-      message += colour(` (${numberOfDiffs} diffs)`);
+      await page.screenshot({ path, fullPage: true });
+
+      let message = `Created ${isGolden ? "golden " : ""}snapshot ${chalk.cyan(
+        filename
+      )}`;
+
+      if (!isGolden) {
+        const numberOfDiffs = await compareImages(filename);
+        const colour = numberOfDiffs > 0 ? chalk.yellow : chalk.green;
+        message += colour(` (${numberOfDiffs} diffs)`);
+      }
+      message += chalk.white(` ${timer.getElapsed()}s`);
+      log.info(message);
+      resolve();
+    } catch (error) {
+      if (error.message.indexOf("invalid URL") > -1) {
+        log.error(chalk.red(`${url}: URL does not exist`));
+      } else {
+        log.error(chalk.red(`${filename}: ${error.message}`));
+      }
+      resolve();
     }
-    message += chalk.white(` ${timer.getElapsed()}s`);
-    log.info(message);
-  } catch (error) {
-    log.error(chalk.red(`${filename}: ${error.message}`));
-  }
-};
+  });
 
 (async () => {
   // handle args
