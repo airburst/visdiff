@@ -26,3 +26,5 @@ export const VIEWPORTS = [
 ];
 
 export const BATCH_SIZE = 4; // Parallel page screenshots (x viewports) = 10
+
+export const PAGE_DELAY = 5 * 1000; // Wait in milliseconds for password-protected pages to load

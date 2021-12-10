@@ -8,17 +8,22 @@ import {
   emptyFolders,
   Timer,
   chunk,
+  isPasswordProtected,
 } from "./utils/index.js";
-import { FOLDERS, VIEWPORTS, BATCH_SIZE } from "./constants.js";
-// import urlList from "./urlList.js";
+import { FOLDERS, VIEWPORTS, BATCH_SIZE, PAGE_DELAY } from "./constants.js";
+import urlList from "./urlList.js";
 
-const urlList = [
-  "https://preview-stagingwwwsimplybusinessc19589.gtsb.io/cs/welcome/yoga-insurance/",
-];
+// const urlList = [
+//   "https://preview-stagingwwwsimplybusinessc19589.gtsb.io/welcome/yoga-insurance/",
+//   "https://www.simplybusiness.com/welcome/yoga-insurance/",
+// ];
+
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Take a page snapshot for a given url and size
 const takeSnapshot = ({ browser, url, viewport, isGolden, timer }) =>
   new Promise(async (resolve) => {
+    const filename = `${makeFileName(url)}-${viewport.width}.png`;
     const page = await browser.newPage();
 
     await page.setViewportSize({
@@ -28,11 +33,21 @@ const takeSnapshot = ({ browser, url, viewport, isGolden, timer }) =>
     try {
       await page.goto(url, { waitUntil: "domcontentloaded" });
 
-      // Test whether this page is password-protected
+      // If page is password-protected, fill in the password
+      if (isPasswordProtected(url)) {
+        log.info(chalk.cyan(`${url} is password protected`));
+        await page.waitForSelector("#previewPassField");
+        await page.fill("#previewPassField", "Password321");
+        const button = await page.$("button");
+        await button.click();
+        // Wait for page to fully load
+        await delay(PAGE_DELAY);
+      }
 
+      // Scroll all the way down on page
       await scrollFullPage(page);
 
-      const filename = `${makeFileName(url)}-${viewport.width}.png`;
+      // Take screenshot
       const path = isGolden
         ? `./${FOLDERS.GOLDEN}/${filename}`
         : `./${FOLDERS.SCREENSHOTS}/${filename}`;
