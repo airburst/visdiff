@@ -7,7 +7,7 @@ import {
   isPasswordProtected,
   delay,
 } from "./utils/index.js";
-import { FOLDERS, PAGE_DELAY } from "./constants.js";
+import { FOLDERS, PAGE_DELAY, BASE_URLS } from "./constants.js";
 
 // Take a page snapshot for a given url and size
 const takeSnapshot = ({ browser, url, viewport, isGolden, timer }) =>
@@ -15,16 +15,20 @@ const takeSnapshot = ({ browser, url, viewport, isGolden, timer }) =>
     const filename = `${makeFileName(url)}-${viewport.width}.png`;
     const page = await browser.newPage();
 
+    // Modify the target url to point to our preview version
+    const baseUrl = isGolden ? BASE_URLS.MASTER : BASE_URLS.PREVIEW;
+    const visitUrl = `${baseUrl}${url}`;
+
     await page.setViewportSize({
       width: viewport.width,
       height: viewport.height,
     });
     try {
-      await page.goto(url, { waitUntil: "domcontentloaded" });
+      await page.goto(visitUrl, { waitUntil: "domcontentloaded" });
 
       // If page is password-protected, fill in the password
-      if (isPasswordProtected(url)) {
-        log.info(chalk.cyan(`${url} is password protected`));
+      if (isPasswordProtected(visitUrl)) {
+        log.info(chalk.cyan(`${visitUrl} is password protected`));
         await page.waitForSelector("#previewPassField");
         await page.fill("#previewPassField", "Password321");
         const button = await page.$("button");

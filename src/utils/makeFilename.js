@@ -8,7 +8,12 @@ const replaceAll = (string, search, replace) => {
 
 // Uses Node 14 compliant function to replace all
 export const makeFileName = (url = "") => {
-  const withoutHttps = replaceAll(url, /https:\/\//g, "");
+  if (url === "") {
+    return "home";
+  }
 
-  return replaceAll(withoutHttps, /\//g, "-");
+  const withoutHttps = replaceAll(url, /https:\/\//g, "");
+  const withoutLeadingSlash = withoutHttps.slice(1);
+
+  return replaceAll(withoutLeadingSlash, /\//g, "-");
 };

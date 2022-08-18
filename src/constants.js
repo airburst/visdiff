@@ -1,12 +1,22 @@
+// 2022-08-18
+// This is a repurposed approach for comparing master
+// to a preview, where base urls differ
+export const BASE_URLS = {
+  MASTER: "https://www.simplybusiness.co.uk",
+  PREVIEW: "https://stagingreaktor-testgatsbypluginpreact.gtsb.io",
+};
+
+// This was used for the original implementation, which
+// re-tested the same urls after change.
 export const DOMAINS = {
   PPC: {
     PRODUCTION: "https://www.simplybusiness.com",
-    PREVIEW: "https://preview-stagingwwwsimplybusinessc19589.gtsb.io",
+    PREVIEW: "https://stagingreaktor-testgatsbypluginpreact.gtsb.io",
     MODIFIER: "cs",
   },
   NON_PPC: {
     PRODUCTION: "https://www.simplybusiness.co.uk",
-    PREVIEW: "https://preview-stagingreaktor.gtsb.io",
+    PREVIEW: "https://stagingreaktor-testgatsbypluginpreact.gtsb.io",
     MODIFIER: {
       UK: "__csuk",
       US: "__csus",
